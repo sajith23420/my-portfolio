@@ -1,0 +1,362 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/Button";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { Play, Pause } from "lucide-react";
+
+/* ─── Typewriter ─── */
+const TypewriterText = ({ text }: { text: string }) => {
+  const [displayedText, setDisplayedText] = useState("");
+  useEffect(() => {
+    let i = 0;
+    setDisplayedText("");
+    const interval = setInterval(() => {
+      setDisplayedText(text.slice(0, i));
+      i++;
+      if (i > text.length) clearInterval(interval);
+    }, 50);
+    return () => clearInterval(interval);
+  }, [text]);
+
+  return (
+    <span className="inline-block">
+      {displayedText}
+      <motion.span
+        animate={{ opacity: [1, 0] }}
+        transition={{ duration: 0.8, repeat: Infinity }}
+        className="inline-block w-[3px] h-[1em] bg-[#F37512] ml-1 align-middle"
+      />
+    </span>
+  );
+};
+
+/* ─── Tiny Star Particles ─── */
+const StarParticles = () => {
+  const [stars] = useState(() =>
+    Array.from({ length: 30 }, (_, i) => ({
+      id: i,
+      x: (i * 37 + 13) % 100,
+      y: (i * 53 + 7) % 100,
+      size: (i % 3) * 0.7 + 1,
+      duration: (i % 5) + 5,
+      delay: (i % 4),
+      opacity: ((i % 6) * 0.05) + 0.05,
+    }))
+  );
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {stars.map((s) => (
+        <motion.div
+          key={s.id}
+          className="absolute rounded-full bg-white"
+          style={{
+            left: `${s.x}%`,
+            top: `${s.y}%`,
+            width: s.size,
+            height: s.size,
+          }}
+          animate={{
+            opacity: [s.opacity, s.opacity * 2.5, s.opacity],
+            scale: [1, 1.4, 1],
+          }}
+          transition={{
+            duration: s.duration,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: s.delay,
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
+/* ─── Tech Tags ─── */
+const techTags = ["React", "Node.js", "JavaScript", "MongoDB", "MySQL", "QA Testing"];
+
+/* ═══════════════════════════════════════ */
+/*                 HERO                    */
+/* ═══════════════════════════════════════ */
+export function Hero({ entered }: { entered: boolean }) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [userPaused, setUserPaused] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+  const hasAutoScrolled = useRef(false);
+  const userHasScrolled = useRef(false);
+
+  const togglePlay = useCallback(() => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+        setIsPlaying(false);
+        setUserPaused(true);
+      } else {
+        videoRef.current.play().catch(console.error);
+        setIsPlaying(true);
+        setUserPaused(false);
+      }
+    }
+  }, [isPlaying]);
+
+  // Start video WITH SOUND when user enters the portfolio
+  useEffect(() => {
+    if (entered && videoRef.current) {
+      const video = videoRef.current;
+      video.currentTime = 0;
+      video.muted = false;
+      video.play()
+        .then(() => setIsPlaying(true))
+        .catch(console.error);
+    }
+  }, [entered]);
+
+  // Detect manual user scroll to cancel auto-scroll
+  useEffect(() => {
+    if (!entered) return;
+
+    const handleScroll = () => {
+      userHasScrolled.current = true;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [entered]);
+
+  // Auto-scroll to About section after video ends + brief pause (once only)
+  useEffect(() => {
+    if (!entered) return;
+    const video = videoRef.current;
+    if (!video) return;
+
+    let timer: ReturnType<typeof setTimeout>;
+
+    const handleEnded = () => {
+      if (hasAutoScrolled.current || userHasScrolled.current) return;
+      hasAutoScrolled.current = true;
+
+      // Wait 5% of the video duration after it ends, then scroll
+      const delay = (video.duration || 10) * 0.05 * 1000;
+      timer = setTimeout(() => {
+        const aboutSection = document.getElementById("about");
+        if (aboutSection) {
+          aboutSection.scrollIntoView({ behavior: "smooth" });
+        }
+      }, delay);
+    };
+
+    video.addEventListener("ended", handleEnded);
+    return () => {
+      video.removeEventListener("ended", handleEnded);
+      clearTimeout(timer);
+    };
+  }, [entered]);
+
+  // Intersection Observer — pause / resume on scroll
+  useEffect(() => {
+    if (!entered) return;
+
+    const video = videoRef.current;
+    const section = sectionRef.current;
+    if (!video || !section) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !userPaused) {
+          video.play().then(() => setIsPlaying(true)).catch(console.error);
+        } else if (!entry.isIntersecting) {
+          video.pause();
+          setIsPlaying(false);
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, [entered, userPaused]);
+
+  return (
+    <section
+      ref={sectionRef}
+      id="home"
+      className="relative w-full h-screen overflow-hidden"
+    >
+      {/* ═══ RIGHT: VIDEO (60%) ═══ */}
+      <div className="absolute inset-y-0 right-0 w-full lg:w-[68%] lg:right-[-6%] z-10">
+        <video
+          ref={videoRef}
+          src="/my.mp4"
+          playsInline
+          preload="auto"
+          className="w-full h-full object-cover object-right"
+        />
+        {/* Smooth fade into left content */}
+        <div className="absolute inset-y-0 left-0 w-[35%] bg-gradient-to-r from-[#050505] to-transparent pointer-events-none" />
+        {/* Bottom fade */}
+        <div className="absolute inset-x-0 bottom-0 h-[8%] bg-gradient-to-t from-[#050505] to-transparent pointer-events-none" />
+        {/* Top fade */}
+        <div className="absolute inset-x-0 top-0 h-[5%] bg-gradient-to-b from-[#050505] to-transparent pointer-events-none" />
+      </div>
+
+      {/* Mobile overlay */}
+      <div className="absolute inset-0 bg-[#050505]/65 lg:hidden z-[15] pointer-events-none" />
+
+      {/* ═══ LEFT: CONTENT (40%) ═══ */}
+      <div className="absolute inset-y-0 left-0 w-full lg:w-[42%] z-20 flex items-center">
+        {/* Subtle grid texture */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.04]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px)",
+            backgroundSize: "50px 50px",
+          }}
+        />
+
+        {/* Star particles */}
+        <StarParticles />
+
+        {/* Subtle orange glow */}
+        <motion.div
+          animate={{ scale: [1, 1.15, 1], opacity: [0.1, 0.18, 0.1] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-1/2 left-1/3 -translate-y-1/2 w-[280px] h-[280px] bg-[#F37512]/20 rounded-full blur-[100px] pointer-events-none"
+        />
+
+        {/* Content */}
+        <div className="relative px-6 md:px-10 lg:px-20 xl:px-30 w-full pt-[70px]">
+          {/* Status Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={entered ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="mb-6 opacity-0"
+          >
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium tracking-wide text-[#F37512] border border-[#F37512]/20 bg-[#F37512]/[0.06]">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F37512] opacity-60" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#F37512]" />
+              </span>
+              Open to Opportunities
+            </span>
+          </motion.div>
+
+          {/* Name */}
+          <motion.h1
+            initial={{ opacity: 0, y: 25, filter: "blur(8px)" }}
+            animate={entered ? { opacity: 1, y: 0, filter: "blur(0px)" } : {}}
+            transition={{ duration: 1.2, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="text-[2.1rem] sm:text-[2.7rem] md:text-[3.3rem] lg:text-[2.8rem] xl:text-[3.4rem] font-bold font-heading mb-5 tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60 leading-[1.15] opacity-0"
+          >
+            Sajitha Bandara
+          </motion.h1>
+
+          {/* Title */}
+          <motion.div
+            initial={{ opacity: 0, y: 18, filter: "blur(5px)" }}
+            animate={entered ? { opacity: 1, y: 0, filter: "blur(0px)" } : {}}
+            transition={{ duration: 1, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="mb-5 flex flex-col gap-1 opacity-0"
+          >
+            <span className="text-xl sm:text-2xl md:text-3xl font-bold text-[#F37512]">Full Stack Developer</span>
+            <span className="text-[#F2F2F2]/85 font-medium text-base sm:text-lg md:text-xl">
+              <TypewriterText text="Software QA Enthusiast" />
+            </span>
+          </motion.div>
+
+          {/* Description */}
+          <motion.p
+            initial={{ opacity: 0, y: 15 }}
+            animate={entered ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 1, delay: 1.0, ease: [0.16, 1, 0.3, 1] }}
+            className="text-sm sm:text-base text-[#F2F2F2]/40 font-light mb-8 max-w-sm leading-relaxed opacity-0"
+          >
+            Passionate about building modern web applications, exploring new technologies, and creating better digital experiences.
+          </motion.p>
+
+          {/* Tech Tags */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={entered ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, delay: 1.2, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-wrap gap-2.5 mb-10 opacity-0"
+          >
+            {techTags.map((tag, i) => (
+              <motion.span
+                key={tag}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={entered ? { opacity: 1, scale: 1 } : {}}
+                transition={{ duration: 0.4, delay: 1.3 + i * 0.08 }}
+                className="px-3.5 py-1.5 rounded-md text-xs font-medium text-[#F2F2F2]/60 bg-white/[0.04] border border-white/[0.06] hover:border-[#F37512]/40 hover:text-[#F37512] hover:bg-[#F37512]/[0.06] hover:shadow-[0_0_12px_rgba(243,117,18,0.15)] transition-all duration-300 cursor-default"
+              >
+                {tag}
+              </motion.span>
+            ))}
+          </motion.div>
+
+          {/* CTA Buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={entered ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, delay: 1.6, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col sm:flex-row gap-4 sm:gap-5 opacity-0"
+          >
+            <Button onClick={() => document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" })}>
+              View Projects
+            </Button>
+            <Button variant="outline" onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}>
+              Contact Me
+            </Button>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* ═══ SCROLL INDICATOR — bottom center ═══ */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={entered ? { opacity: 1 } : {}}
+        transition={{ delay: 2.5, duration: 1 }}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 pointer-events-none flex flex-col items-center gap-2 opacity-0"
+      >
+        {/* Mouse icon */}
+        <div className="w-6 h-10 rounded-full border-2 border-white/20 flex justify-center pt-2 relative">
+          <motion.div
+            animate={{ y: [0, 12, 0], opacity: [1, 0, 1] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+            className="w-1 h-2.5 bg-[#F37512] rounded-full"
+          />
+        </div>
+        <motion.span
+          animate={{ opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className="text-[9px] uppercase tracking-[0.25em] text-white/30 font-mono"
+        >
+          Scroll
+        </motion.span>
+      </motion.div>
+
+      {/* ═══ VIDEO CONTROL (Play/Pause only) ═══ */}
+      <motion.div
+        initial={{ opacity: 0, y: 14 }}
+        animate={entered ? { opacity: 1, y: 0 } : {}}
+        transition={{ delay: 2, duration: 0.8 }}
+        className="absolute bottom-8 right-8 md:bottom-10 md:right-10 z-30 flex items-center gap-2 opacity-0"
+      >
+        <button
+          onClick={togglePlay}
+          className="group flex items-center justify-center w-10 h-10 rounded-full bg-black/25 backdrop-blur-lg border border-white/10 hover:border-[#F37512]/40 active:scale-95 transition-all duration-300"
+          aria-label={isPlaying ? "Pause video" : "Play video"}
+        >
+          {isPlaying ? (
+            <Pause className="w-4 h-4 text-white/70 group-hover:text-white transition-colors" />
+          ) : (
+            <Play className="w-4 h-4 text-[#F37512] transition-colors translate-x-[1px]" />
+          )}
+        </button>
+      </motion.div>
+    </section>
+  );
+}
