@@ -1,11 +1,10 @@
 "use client";
-
 import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
-
+import { client } from "@/sanity/lib/client";
 /* ─── Custom GitHub icon ─── */
 const GithubIcon = ({ className = "" }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -13,10 +12,7 @@ const GithubIcon = ({ className = "" }: { className?: string }) => (
     <path d="M9 18c-4.51 2-5-2-7-2"></path>
   </svg>
 );
-// Sanity client එක මෙතනට import කරගන්න ඕන. ඔයාගේ file path එක අනුව මේක වෙනස් වෙන්න පුළුවන්.
-// උදාහරණයක් විදිහට: import { client } from "@/sanity/lib/client"; 
-import { client } from "@/sanity/lib/client";
-// 1. Define your TypeScript Interfaces
+// 1. TypeScript Interfaces
 interface Project {
   _id: string;
   title: string;
@@ -31,7 +27,6 @@ interface Project {
     };
   };
 }
-
 // --- STACKED CARD COMPONENT ---
 const StackedCard = ({
   project,
@@ -44,18 +39,18 @@ const StackedCard = ({
   totalCards: number;
   scrollYProgress: any;
 }) => {
+  // යට තියෙන Cards කුඩා වීමට අවශ්‍ය Animation එක
   const scale = useTransform(
     scrollYProgress,
     [index / totalCards, 1],
     [1, 1 - (totalCards - index) * 0.05]
   );
-
+  // යට තියෙන Cards අඳුරු වීමට අවශ්‍ය Animation එක
   const opacity = useTransform(
     scrollYProgress,
     [index / totalCards, 1],
     [1, 0.5]
   );
-
   return (
     <div className="h-screen w-full flex items-center justify-center sticky top-0">
       <motion.div
@@ -81,7 +76,6 @@ const StackedCard = ({
               </h3>
             </div>
           </div>
-
           {/* Action Buttons */}
           <div className="flex items-center gap-3 mt-2 sm:mt-0">
             {project.githubUrl && (
@@ -108,7 +102,6 @@ const StackedCard = ({
             )}
           </div>
         </div>
-
         {/* --- Technologies Tags --- */}
         <div className="flex flex-wrap gap-3 mt-8 z-10">
           {project.technologies?.map((tech, i) => (
@@ -120,7 +113,6 @@ const StackedCard = ({
             </span>
           ))}
         </div>
-
         {/* --- Card Body / Image Showcase --- */}
         <div className="relative mt-10 w-full flex-grow rounded-2xl overflow-hidden border border-white/5 bg-black/50 group">
           {project.mainImage?.asset?.url ? (
@@ -141,23 +133,19 @@ const StackedCard = ({
     </div>
   );
 };
-
 // --- MAIN PROJECTS PAGE ---
 export default function ProjectsPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
   });
-
-  // Fetch data from Sanity
+  // Sanity එකෙන් Data ලබා ගැනීම
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        // Sanity query - මේක ඔයාගේ Sanity schema එකට ගැලපෙන විදිහට හදාගන්න
         const query = `*[_type == "project"]{
           _id,
           title,
@@ -172,7 +160,13 @@ export default function ProjectsPage() {
             }
           }
         }`;
-        const data = await client.fetch(query);
+        // Bypass cache completely by passing a timestamp parameter and no-store option
+        const data = await client.fetch(
+          query,
+          { ts: new Date().getTime() },
+          { cache: "no-store" }
+        );
+        console.log("Sanity Projects Data: ", data); // Data එනවද කියලා බලාගන්න
         setProjects(data);
       } catch (error) {
         console.error("Error fetching projects:", error);
@@ -180,10 +174,8 @@ export default function ProjectsPage() {
         setIsLoading(false);
       }
     };
-
     fetchProjects();
   }, []);
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-transparent">
@@ -191,7 +183,6 @@ export default function ProjectsPage() {
       </div>
     );
   }
-
   return (
     <main className="relative min-h-screen bg-transparent w-full">
       <section className="h-[40vh] w-full flex items-end justify-center pb-20 sticky top-0 -z-10">
@@ -199,7 +190,6 @@ export default function ProjectsPage() {
           PROJECTS
         </h1>
       </section>
-
       <section
         ref={containerRef}
         className="relative w-full px-4 sm:px-6 md:px-8 pb-32"

@@ -48,5 +48,6 @@ export default {
             title: 'Live Preview URL (Coming Soon)',
             type: 'url',
         },
+
     ],
 }
