@@ -1,10 +1,10 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import Image from "next/image";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { client } from "@/sanity/lib/client";
+
 /* ─── Custom GitHub icon ─── */
 const GithubIcon = ({ className = "" }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -12,7 +12,7 @@ const GithubIcon = ({ className = "" }: { className?: string }) => (
     <path d="M9 18c-4.51 2-5-2-7-2"></path>
   </svg>
 );
-// 1. TypeScript Interfaces
+
 interface Project {
   _id: string;
   title: string;
@@ -21,197 +21,120 @@ interface Project {
   technologies: string[];
   githubUrl?: string;
   liveUrl?: string;
-  mainImage: {
-    asset: {
-      url: string;
-    };
-  };
+  gallery: { asset: { url: string } }[];
 }
-// --- STACKED CARD COMPONENT ---
-const StackedCard = ({
-  project,
-  index,
-  totalCards,
-  scrollYProgress
-}: {
-  project: Project;
-  index: number;
-  totalCards: number;
-  scrollYProgress: any;
-}) => {
-  // යට තියෙන Cards කුඩා වීමට අවශ්‍ය Animation එක
-  const scale = useTransform(
-    scrollYProgress,
-    [index / totalCards, 1],
-    [1, 1 - (totalCards - index) * 0.05]
-  );
-  // යට තියෙන Cards අඳුරු වීමට අවශ්‍ය Animation එක
-  const opacity = useTransform(
-    scrollYProgress,
-    [index / totalCards, 1],
-    [1, 0.5]
-  );
+
+const StackedCard = ({ project, index, totalCards, scrollYProgress }: { project: Project; index: number; totalCards: number; scrollYProgress: any }) => {
+  const scale = useTransform(scrollYProgress, [index / totalCards, 1], [1, 1 - (totalCards - index) * 0.05]);
+
+  const img1 = project.gallery?.[0]?.asset?.url;
+  const img2 = project.gallery?.[1]?.asset?.url;
+  const img3 = project.gallery?.[2]?.asset?.url;
+
   return (
     <div className="h-screen w-full flex items-center justify-center sticky top-0">
       <motion.div
-        style={{
-          scale,
-          opacity,
-          top: `calc(10vh + ${index * 30}px)`,
-        }}
-        className="relative w-full max-w-5xl h-[75vh] sm:h-[80vh] bg-[#0f0f0f] rounded-[2.5rem] border border-white/10 p-8 sm:p-12 flex flex-col overflow-hidden shadow-2xl"
+        /* මෙතන top අගය වෙනස් කළා (10vh අයින් කරලා 30px දැම්මා) කාඩ් උඩට ගන්න */
+        style={{ scale, top: `calc(${index * 30}px)` }}
+        /* මෙතන h-[80vh] වෙනුවට h-[75vh] සහ p-10 වෙනුවට p-8 දැම්මා */
+        className="relative w-full max-w-[1300px] h-[75vh] bg-[#09090b] rounded-[2.5rem] border border-white/10 p-8 flex flex-col overflow-hidden shadow-2xl"
       >
-        {/* --- Card Header --- */}
-        <div className="flex flex-col sm:flex-row justify-between items-start gap-6 z-10">
-          <div className="flex items-start gap-6">
-            <h2 className="text-6xl sm:text-8xl font-black text-white/20 leading-none">
+
+        {/* --- Header Area --- */}
+        {/* මෙතන mb-8, pb-8 වෙනුවට mb-6, pb-6 දැම්මා */}
+        <div className="flex justify-between items-start mb-6 z-10 w-full border-b border-white/5 pb-6">
+          <div className="flex items-start gap-8">
+            {/* Loku Number */}
+            <h2 className="text-[80px] sm:text-[110px] font-black text-white leading-none tracking-tighter mt-[-10px]">
               0{index + 1}
             </h2>
-            <div className="flex flex-col mt-2">
-              <span className="text-xs font-semibold tracking-[0.2em] text-orange-500 mb-2 uppercase">
-                {project.subtitle || "PROJECT"}
+            {/* Title & Description */}
+            <div className="flex flex-col max-w-2xl">
+              <span className="text-xs font-semibold tracking-[0.2em] text-white/50 mb-1 uppercase">
+                {project.subtitle || "PERSONAL"}
               </span>
-              <h3 className="text-3xl sm:text-5xl font-bold text-white uppercase tracking-tight">
+              <h3 className="text-3xl sm:text-4xl font-bold text-white uppercase tracking-tight mb-3">
                 {project.title}
               </h3>
+              <p className="text-white/60 text-sm leading-relaxed">
+                {project.description}
+              </p>
             </div>
           </div>
-          {/* Action Buttons */}
-          <div className="flex items-center gap-3 mt-2 sm:mt-0">
+
+          {/* Buttons */}
+          <div className="flex items-center gap-4 shrink-0">
             {project.githubUrl && (
-              <Link
-                href={project.githubUrl}
-                target="_blank"
-                className="p-3 rounded-full border border-white/10 hover:bg-white/10 transition-colors text-white"
-              >
+              <Link href={project.githubUrl} target="_blank" className="p-3 rounded-full border border-white/20 text-white hover:bg-white hover:text-black transition-all">
                 <GithubIcon className="w-5 h-5" />
               </Link>
             )}
-            {project.liveUrl ? (
-              <Link
-                href={project.liveUrl}
-                target="_blank"
-                className="px-6 py-3 rounded-full border border-white/20 text-sm font-semibold tracking-wide hover:bg-white text-white hover:text-black transition-all flex items-center gap-2"
-              >
+            {project.liveUrl && (
+              <Link href={project.liveUrl} target="_blank" className="px-6 py-3 rounded-full border border-white/20 text-xs font-bold tracking-widest hover:bg-white text-white hover:text-black transition-all flex items-center gap-2 uppercase">
                 LIVE PROJECT <ExternalLink className="w-4 h-4" />
               </Link>
-            ) : (
-              <span className="px-6 py-3 rounded-full border border-white/10 bg-white/5 text-sm font-semibold tracking-wide text-white/50">
-                COMING SOON
-              </span>
             )}
           </div>
         </div>
-        {/* --- Technologies Tags --- */}
-        <div className="flex flex-wrap gap-3 mt-8 z-10">
-          {project.technologies?.map((tech, i) => (
-            <span
-              key={i}
-              className="px-4 py-1.5 rounded-full border border-orange-500/30 text-orange-400 text-xs font-medium tracking-wider bg-orange-500/5"
-            >
-              {tech}
-            </span>
-          ))}
-        </div>
-        {/* --- Card Body / Image Showcase --- */}
-        <div className="relative mt-10 w-full flex-grow rounded-2xl overflow-hidden border border-white/5 bg-black/50 group">
-          {project.mainImage?.asset?.url ? (
-            <Image
-              src={project.mainImage.asset.url}
-              alt={project.title}
-              fill
-              className="object-cover object-top transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100"
-            />
-          ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center bg-gradient-to-br from-white/5 to-transparent">
-              <p className="text-xl text-white/60 mb-4 max-w-lg">{project.description}</p>
+
+        {/* --- Image Grid --- */}
+        <div className="flex-grow grid grid-cols-12 gap-6 min-h-0 z-10">
+          {/* Left Column: 2 smaller images */}
+          <div className="col-span-5 flex flex-col gap-6 h-full">
+            <div className="h-1/2 w-full rounded-2xl overflow-hidden bg-zinc-900 border border-white/5 relative group">
+              {img1 && <img src={img1} alt="p1" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />}
             </div>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] via-transparent to-transparent opacity-60" />
+            <div className="h-1/2 w-full rounded-2xl overflow-hidden bg-zinc-900 border border-white/5 relative group">
+              {img2 && <img src={img2} alt="p2" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />}
+            </div>
+          </div>
+
+          {/* Right Column: 1 Big Image */}
+          <div className="col-span-7 h-full rounded-2xl overflow-hidden bg-zinc-900 border border-white/5 relative group">
+            {img3 && <img src={img3} alt="p3" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />}
+          </div>
         </div>
       </motion.div>
     </div>
   );
 };
-// --- MAIN PROJECTS PAGE ---
+
 export function Projects() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end end"] });
 
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"],
-  });
-
-  // Sanity එකෙන් Data ලබා ගැනීම
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const query = `*[_type == "project"]{
-          _id,
-          title,
-          subtitle,
-          description,
-          technologies,
-          githubUrl,
-          liveUrl,
-          mainImage{
-            asset->{
-              url
-            }
-          },
-          gallery[]{
-            asset->{
-              url
-            }
-          }
-        }`;
+        const query = `*[_type == "project"]{_id, title, subtitle, description, githubUrl, liveUrl, gallery[]{asset->{url}}}`;
         const data = await client.fetch(query);
+        const titleOrder = [
+          "Forever – E-Commerce Web App",
+          "KV-Audio Rentals Platform",
+          "nextgen app",
+          "whether app",
+        ];
+        data.sort((a: Project, b: Project) => {
+          const aIndex = titleOrder.indexOf(a.title);
+          const bIndex = titleOrder.indexOf(b.title);
+          return (aIndex === -1 ? titleOrder.length : aIndex) - (bIndex === -1 ? titleOrder.length : bIndex);
+        });
         setProjects(data);
-      } catch (error) {
-        console.error("Error fetching projects:", error);
-      } finally {
-        setIsLoading(false);
-      }
+      } catch (error) { console.error(error); } finally { setIsLoading(false); }
     };
-
     fetchProjects();
   }, []);
 
   return (
-    <main className="relative min-h-screen bg-transparent w-full">
-      <section className="h-[40vh] w-full flex items-end justify-center pb-20 sticky top-0 -z-10">
-        <h1 className="text-[12vw] sm:text-[8rem] font-black tracking-tighter uppercase text-white/90 leading-none">
-          PROJECTS
-        </h1>
+    <main className="relative min-h-screen bg-[#09090b] w-full">
+      <section className="h-[40vh] w-full flex items-end justify-center pb-20 relative z-0">
+        <h1 className="text-[12vw] sm:text-[8rem] font-black tracking-tighter uppercase text-white/90 leading-none">PROJECTS</h1>
       </section>
 
-      {/* containerRef එක හැමතිස්සෙම Render වෙන විදිහට මෙතනින් හැදුවා */}
-      <section
-        ref={containerRef}
-        className="relative w-full px-4 sm:px-6 md:px-8 pb-32 flex flex-col items-center"
-        // Load වෙනකම් උස 50vh, Load වුණාට පස්සේ Projects ගාණ අනුව උස හැදෙනවා
-        style={{ height: isLoading ? "50vh" : `${Math.max(projects.length, 1) * 100}vh` }}
-      >
-        {isLoading ? (
-          // Loading Screen එක Section එක ඇතුළටම දැම්මා
-          <div className="flex h-full w-full items-center justify-center">
-            <p className="text-orange-500 font-bold tracking-widest animate-pulse">LOADING PROJECTS...</p>
-          </div>
-        ) : projects.length > 0 ? (
-          projects.map((project, index) => (
-            <StackedCard
-              key={project._id}
-              project={project}
-              index={index}
-              totalCards={projects.length}
-              scrollYProgress={scrollYProgress}
-            />
-          ))
-        ) : (
-          <div className="text-center text-white/50 mt-20">No projects found in Sanity.</div>
-        )}
+      <section ref={containerRef} className="relative z-10 w-full px-8 pb-32 flex flex-col items-center" style={{ height: `${Math.max(projects.length, 1) * 100}vh` }}>
+        {projects.map((project, index) => <StackedCard key={project._id} project={project} index={index} totalCards={projects.length} scrollYProgress={scrollYProgress} />)}
       </section>
     </main>
   );

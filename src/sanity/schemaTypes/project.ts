@@ -48,6 +48,17 @@ export default {
             title: 'Live Preview URL (Coming Soon)',
             type: 'url',
         },
+        {
+
+            name: 'gallery',
+            title: 'Project Gallery',
+            type: 'array',
+            of: [{ type: 'image' }],
+            options: {
+                hotspot: true,
+            }
+        }
 
     ],
 }
+

@@ -80,7 +80,7 @@ const techTags = ["React", "Node.js", "JavaScript", "MongoDB", "MySQL", "QA Test
 /*                 HERO                    */
 /* ═══════════════════════════════════════ */
 export function Hero({ entered }: { entered: boolean }) {
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true); // Default true due to autoPlay
   const [userPaused, setUserPaused] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
@@ -94,24 +94,33 @@ export function Hero({ entered }: { entered: boolean }) {
         setIsPlaying(false);
         setUserPaused(true);
       } else {
-        videoRef.current.play().catch(console.error);
-        setIsPlaying(true);
-        setUserPaused(false);
+        const playPromise = videoRef.current.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              setIsPlaying(true);
+              setUserPaused(false);
+            })
+            .catch(console.error);
+        }
       }
     }
   }, [isPlaying]);
 
-  // Start video WITH SOUND when user enters the portfolio
+  // Handle Initial Play Safely
   useEffect(() => {
-    if (entered && videoRef.current) {
-      const video = videoRef.current;
-      video.currentTime = 0;
-      video.muted = false;
-      video.play()
-        .then(() => setIsPlaying(true))
-        .catch(console.error);
+    if (entered && videoRef.current && !userPaused) {
+      const playPromise = videoRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => setIsPlaying(true))
+          .catch(() => {
+            // Silently handle autoplay prevention errors
+            setIsPlaying(false);
+          });
+      }
     }
-  }, [entered]);
+  }, [entered, userPaused]);
 
   // Detect manual user scroll to cancel auto-scroll
   useEffect(() => {
@@ -137,7 +146,6 @@ export function Hero({ entered }: { entered: boolean }) {
       if (hasAutoScrolled.current || userHasScrolled.current) return;
       hasAutoScrolled.current = true;
 
-      // Wait 5% of the video duration after it ends, then scroll
       const delay = (video.duration || 10) * 0.05 * 1000;
       timer = setTimeout(() => {
         const aboutSection = document.getElementById("about");
@@ -154,7 +162,7 @@ export function Hero({ entered }: { entered: boolean }) {
     };
   }, [entered]);
 
-  // Intersection Observer — pause / resume on scroll
+  // Intersection Observer — Safely pause / resume on scroll
   useEffect(() => {
     if (!entered) return;
 
@@ -162,13 +170,30 @@ export function Hero({ entered }: { entered: boolean }) {
     const section = sectionRef.current;
     if (!video || !section) return;
 
+    let playPromise: Promise<void> | undefined;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !userPaused) {
-          video.play().then(() => setIsPlaying(true)).catch(console.error);
+          playPromise = video.play();
+          if (playPromise !== undefined) {
+            playPromise
+              .then(() => setIsPlaying(true))
+              .catch(() => { /* Ignore abort errors silently */ });
+          }
         } else if (!entry.isIntersecting) {
-          video.pause();
-          setIsPlaying(false);
+          // If a play promise is pending, wait for it to resolve before pausing to prevent AbortError
+          if (playPromise !== undefined) {
+            playPromise
+              .then(() => {
+                video.pause();
+                setIsPlaying(false);
+              })
+              .catch(() => { /* Ignore */ });
+          } else {
+            video.pause();
+            setIsPlaying(false);
+          }
         }
       },
       { threshold: 0.15 }
@@ -186,27 +211,29 @@ export function Hero({ entered }: { entered: boolean }) {
     >
       {/* ═══ RIGHT: VIDEO (60%) ═══ */}
       <div className="absolute inset-y-0 right-0 w-full lg:w-[68%] lg:right-[-6%] z-10">
+
+
         <video
           ref={videoRef}
-          src="/my.mp4"
+          autoPlay
+          loop
+
           playsInline
           preload="auto"
           className="w-full h-full object-cover object-right"
-        />
-        {/* Smooth fade into left content */}
+        >
+          <source src="/my.mp4" type="video/mp4" />
+        </video>
+
         <div className="absolute inset-y-0 left-0 w-[35%] bg-gradient-to-r from-[#050505] to-transparent pointer-events-none" />
-        {/* Bottom fade */}
         <div className="absolute inset-x-0 bottom-0 h-[8%] bg-gradient-to-t from-[#050505] to-transparent pointer-events-none" />
-        {/* Top fade */}
         <div className="absolute inset-x-0 top-0 h-[5%] bg-gradient-to-b from-[#050505] to-transparent pointer-events-none" />
       </div>
 
-      {/* Mobile overlay */}
       <div className="absolute inset-0 bg-[#050505]/65 lg:hidden z-[15] pointer-events-none" />
 
       {/* ═══ LEFT: CONTENT (40%) ═══ */}
       <div className="absolute inset-y-0 left-0 w-full lg:w-[42%] z-20 flex items-center">
-        {/* Subtle grid texture */}
         <div
           className="absolute inset-0 pointer-events-none opacity-[0.04]"
           style={{
@@ -216,19 +243,15 @@ export function Hero({ entered }: { entered: boolean }) {
           }}
         />
 
-        {/* Star particles */}
         <StarParticles />
 
-        {/* Subtle orange glow */}
         <motion.div
           animate={{ scale: [1, 1.15, 1], opacity: [0.1, 0.18, 0.1] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           className="absolute top-1/2 left-1/3 -translate-y-1/2 w-[280px] h-[280px] bg-[#F37512]/20 rounded-full blur-[100px] pointer-events-none"
         />
 
-        {/* Content */}
         <div className="relative px-6 md:px-10 lg:px-20 xl:px-30 w-full pt-[70px]">
-          {/* Status Badge */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={entered ? { opacity: 1, y: 0 } : {}}
@@ -244,7 +267,6 @@ export function Hero({ entered }: { entered: boolean }) {
             </span>
           </motion.div>
 
-          {/* Name */}
           <motion.h1
             initial={{ opacity: 0, y: 25, filter: "blur(8px)" }}
             animate={entered ? { opacity: 1, y: 0, filter: "blur(0px)" } : {}}
@@ -254,7 +276,6 @@ export function Hero({ entered }: { entered: boolean }) {
             Sajitha Bandara
           </motion.h1>
 
-          {/* Title */}
           <motion.div
             initial={{ opacity: 0, y: 18, filter: "blur(5px)" }}
             animate={entered ? { opacity: 1, y: 0, filter: "blur(0px)" } : {}}
@@ -267,7 +288,6 @@ export function Hero({ entered }: { entered: boolean }) {
             </span>
           </motion.div>
 
-          {/* Description */}
           <motion.p
             initial={{ opacity: 0, y: 15 }}
             animate={entered ? { opacity: 1, y: 0 } : {}}
@@ -277,7 +297,6 @@ export function Hero({ entered }: { entered: boolean }) {
             Passionate about building modern web applications, exploring new technologies, and creating better digital experiences.
           </motion.p>
 
-          {/* Tech Tags */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={entered ? { opacity: 1, y: 0 } : {}}
@@ -297,7 +316,6 @@ export function Hero({ entered }: { entered: boolean }) {
             ))}
           </motion.div>
 
-          {/* CTA Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={entered ? { opacity: 1, y: 0 } : {}}
@@ -321,7 +339,6 @@ export function Hero({ entered }: { entered: boolean }) {
         transition={{ delay: 2.5, duration: 1 }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 pointer-events-none flex flex-col items-center gap-2 opacity-0"
       >
-        {/* Mouse icon */}
         <div className="w-6 h-10 rounded-full border-2 border-white/20 flex justify-center pt-2 relative">
           <motion.div
             animate={{ y: [0, 12, 0], opacity: [1, 0, 1] }}

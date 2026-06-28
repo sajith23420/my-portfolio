@@ -33,8 +33,9 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${inter.variable} ${outfit.variable} ${geistMono.variable} h-full antialiased dark scroll-smooth`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col text-foreground overflow-x-hidden">
+      <body className="min-h-full flex flex-col text-foreground overflow-x-hidden" suppressHydrationWarning>
         <AnimatedBackground />
         <Navbar />
         {children}
