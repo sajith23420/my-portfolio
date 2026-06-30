@@ -37,33 +37,33 @@ const StackedCard = ({ project, index, totalCards, scrollYProgress }: { project:
         /* මෙතන top අගය වෙනස් කළා (10vh අයින් කරලා 30px දැම්මා) කාඩ් උඩට ගන්න */
         style={{ scale, top: `calc(${index * 30}px)` }}
         /* මෙතන h-[80vh] වෙනුවට h-[75vh] සහ p-10 වෙනුවට p-8 දැම්මා */
-        className="relative w-full max-w-[1300px] h-[75vh] bg-[#09090b] rounded-[2.5rem] border border-white/10 p-8 flex flex-col overflow-hidden shadow-2xl"
+        className="relative w-full max-w-[1300px] h-[85vh] md:h-[75vh] bg-[#09090b] rounded-[2.5rem] border border-white/10 p-4 md:p-8 flex flex-col overflow-y-auto overflow-x-hidden shadow-2xl no-scrollbar"
       >
 
         {/* --- Header Area --- */}
         {/* මෙතන mb-8, pb-8 වෙනුවට mb-6, pb-6 දැම්මා */}
-        <div className="flex justify-between items-start mb-6 z-10 w-full border-b border-white/5 pb-6">
-          <div className="flex items-start gap-8">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6 mb-6 z-10 w-full border-b border-white/5 pb-6">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 md:gap-8">
             {/* Loku Number */}
             <h2 className="text-[80px] sm:text-[110px] font-black text-white leading-none tracking-tighter mt-[-10px]">
               0{index + 1}
             </h2>
             {/* Title & Description */}
-            <div className="flex flex-col max-w-2xl">
+            <div className="flex flex-col items-center sm:items-start max-w-2xl">
               <span className="text-xs font-semibold tracking-[0.2em] text-white/50 mb-1 uppercase">
                 {project.subtitle || "PERSONAL"}
               </span>
               <h3 className="text-3xl sm:text-4xl font-bold text-white uppercase tracking-tight mb-3">
                 {project.title}
               </h3>
-              <p className="text-white/60 text-sm leading-relaxed">
+              <p className="text-white/60 text-sm leading-relaxed text-center sm:text-left">
                 {project.description}
               </p>
             </div>
           </div>
 
           {/* Buttons */}
-          <div className="flex items-center gap-4 shrink-0">
+          <div className="flex items-center justify-center lg:justify-start gap-4 shrink-0">
             {project.githubUrl && (
               <Link href={project.githubUrl} target="_blank" className="p-3 rounded-full border border-white/20 text-white hover:bg-white hover:text-black transition-all">
                 <GithubIcon className="w-5 h-5" />
@@ -78,9 +78,9 @@ const StackedCard = ({ project, index, totalCards, scrollYProgress }: { project:
         </div>
 
         {/* --- Image Grid --- */}
-        <div className="flex-grow grid grid-cols-12 gap-6 min-h-0 z-10">
+        <div className="flex-grow flex flex-col md:grid md:grid-cols-12 gap-6 min-h-[600px] md:min-h-0 z-10 mt-4 md:mt-0">
           {/* Left Column: 2 smaller images */}
-          <div className="col-span-5 flex flex-col gap-6 h-full">
+          <div className="md:col-span-5 flex flex-col gap-6 h-[300px] md:h-full">
             <div className="h-1/2 w-full rounded-2xl overflow-hidden bg-zinc-900 border border-white/5 relative group">
               {img1 && <img src={img1} alt="p1" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />}
             </div>
@@ -90,7 +90,7 @@ const StackedCard = ({ project, index, totalCards, scrollYProgress }: { project:
           </div>
 
           {/* Right Column: 1 Big Image */}
-          <div className="col-span-7 h-full rounded-2xl overflow-hidden bg-zinc-900 border border-white/5 relative group">
+          <div className="md:col-span-7 h-[300px] md:h-full rounded-2xl overflow-hidden bg-zinc-900 border border-white/5 relative group">
             {img3 && <img src={img3} alt="p3" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />}
           </div>
         </div>
@@ -128,7 +128,7 @@ export function Projects() {
   }, []);
 
   return (
-    <main className="relative min-h-screen bg-[#09090b] w-full">
+    <main id="projects" className="relative min-h-screen bg-[#09090b] w-full">
       <section className="h-[40vh] w-full flex items-end justify-center pb-20 relative z-0">
         <h1 className="text-[12vw] sm:text-[8rem] font-black tracking-tighter uppercase text-white/90 leading-none">PROJECTS</h1>
       </section>

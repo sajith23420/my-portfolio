@@ -17,7 +17,7 @@ export function Section({ children, className, id, ...props }: SectionProps) {
     <section
       ref={ref}
       id={id}
-      className={cn("w-full py-24 md:py-32 flex justify-center relative overflow-hidden", className)}
+      className={cn("w-full pt-16 pb-24 md:pt-20 md:pb-32 min-h-[calc(100vh-80px)] flex flex-col items-center justify-center relative overflow-hidden", className)}
       {...props}
     >
       <motion.div

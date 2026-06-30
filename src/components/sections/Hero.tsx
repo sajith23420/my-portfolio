@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { useEffect, useState, useRef, useCallback } from "react";
-import { Play, Pause } from "lucide-react";
+import { Play, Pause, Download } from "lucide-react";
 
 /* ─── Typewriter ─── */
 const TypewriterText = ({ text }: { text: string }) => {
@@ -144,15 +144,19 @@ export function Hero({ entered }: { entered: boolean }) {
 
     const handleEnded = () => {
       if (hasAutoScrolled.current || userHasScrolled.current) return;
-      hasAutoScrolled.current = true;
+      
+      // Check if it already auto-scrolled this session
+      if (sessionStorage.getItem("hasAutoScrolled")) return;
 
-      const delay = (video.duration || 10) * 0.05 * 1000;
+      hasAutoScrolled.current = true;
+      sessionStorage.setItem("hasAutoScrolled", "true");
+
       timer = setTimeout(() => {
         const aboutSection = document.getElementById("about");
         if (aboutSection) {
           aboutSection.scrollIntoView({ behavior: "smooth" });
         }
-      }, delay);
+      }, 500); // Small 500ms delay after video ends
     };
 
     video.addEventListener("ended", handleEnded);
@@ -207,33 +211,31 @@ export function Hero({ entered }: { entered: boolean }) {
     <section
       ref={sectionRef}
       id="home"
-      className="relative w-full h-screen overflow-hidden"
+      className="relative w-full min-h-screen lg:h-screen overflow-hidden flex flex-col lg:block"
     >
       {/* ═══ RIGHT: VIDEO (60%) ═══ */}
-      <div className="absolute inset-y-0 right-0 w-full lg:w-[68%] lg:right-[-6%] z-10">
+      <div className="relative lg:absolute lg:top-0 lg:right-0 w-full h-[55vh] lg:inset-y-0 lg:h-full lg:w-[68%] lg:right-[-6%] z-10 shrink-0">
 
 
         <video
           ref={videoRef}
           autoPlay
-          loop
+          loop={false}
 
           playsInline
           preload="auto"
-          className="w-full h-full object-cover object-right"
+          className="w-full h-full object-cover object-[center_20%] lg:object-right"
         >
           <source src="/my.mp4" type="video/mp4" />
         </video>
 
         <div className="absolute inset-y-0 left-0 w-[35%] bg-gradient-to-r from-[#050505] to-transparent pointer-events-none" />
-        <div className="absolute inset-x-0 bottom-0 h-[8%] bg-gradient-to-t from-[#050505] to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 bottom-0 h-[40%] lg:h-[8%] bg-gradient-to-t from-[#050505] to-transparent pointer-events-none" />
         <div className="absolute inset-x-0 top-0 h-[5%] bg-gradient-to-b from-[#050505] to-transparent pointer-events-none" />
       </div>
 
-      <div className="absolute inset-0 bg-[#050505]/65 lg:hidden z-[15] pointer-events-none" />
-
       {/* ═══ LEFT: CONTENT (40%) ═══ */}
-      <div className="absolute inset-y-0 left-0 w-full lg:w-[42%] z-20 flex items-center">
+      <div className="relative lg:absolute lg:inset-y-0 lg:left-0 w-full lg:w-[42%] z-20 flex items-center flex-grow">
         <div
           className="absolute inset-0 pointer-events-none opacity-[0.04]"
           style={{
@@ -251,7 +253,7 @@ export function Hero({ entered }: { entered: boolean }) {
           className="absolute top-1/2 left-1/3 -translate-y-1/2 w-[280px] h-[280px] bg-[#F37512]/20 rounded-full blur-[100px] pointer-events-none"
         />
 
-        <div className="relative px-6 md:px-10 lg:px-20 xl:px-30 w-full pt-[70px]">
+        <div className="relative px-6 md:px-10 lg:px-20 xl:px-30 w-full pt-4 pb-16 lg:pt-[70px] lg:pb-0 z-30 flex flex-col items-center lg:items-start text-center lg:text-left">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={entered ? { opacity: 1, y: 0 } : {}}
@@ -271,7 +273,7 @@ export function Hero({ entered }: { entered: boolean }) {
             initial={{ opacity: 0, y: 25, filter: "blur(8px)" }}
             animate={entered ? { opacity: 1, y: 0, filter: "blur(0px)" } : {}}
             transition={{ duration: 1.2, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="text-[2.1rem] sm:text-[2.7rem] md:text-[3.3rem] lg:text-[2.8rem] xl:text-[3.4rem] font-bold font-heading mb-5 tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60 leading-[1.15] opacity-0"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl font-bold font-heading mb-5 tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60 leading-[1.15] opacity-0"
           >
             Sajitha Bandara
           </motion.h1>
@@ -282,7 +284,7 @@ export function Hero({ entered }: { entered: boolean }) {
             transition={{ duration: 1, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="mb-5 flex flex-col gap-1 opacity-0"
           >
-            <span className="text-xl sm:text-2xl md:text-3xl font-bold text-[#F37512]">Full Stack Developer</span>
+            <span className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-[#F37512]">Full Stack Developer</span>
             <span className="text-[#F2F2F2]/85 font-medium text-base sm:text-lg md:text-xl">
               <TypewriterText text="Software QA Enthusiast" />
             </span>
@@ -319,12 +321,22 @@ export function Hero({ entered }: { entered: boolean }) {
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={entered ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.8, delay: 1.6, ease: [0.16, 1, 0.3, 1] }}
-            className="flex flex-col sm:flex-row gap-4 sm:gap-5 opacity-0"
+            transition={{ duration: 1, delay: 1.2, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col sm:flex-row items-center gap-4 opacity-0 w-full sm:w-auto"
           >
-            <Button onClick={() => document.getElementById("projects")?.scrollIntoView({ behavior: "smooth" })}>
-              View Projects
-            </Button>
+            <motion.a
+              href="/Sajitha_Bandara_CV  FULL Stack.pdf"
+              download
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="relative px-8 py-3 rounded-full font-medium tracking-wide overflow-hidden group transition-colors duration-300 bg-[#F37512] text-black hover:bg-[#ff8f36] inline-flex items-center gap-2 justify-center"
+            >
+              <span className="relative z-10 flex items-center gap-2">
+                <Download className="w-4 h-4" />
+                Download CV
+              </span>
+              <span className="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-full transition-transform duration-500 ease-in-out z-0" />
+            </motion.a>
             <Button variant="outline" onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}>
               Contact Me
             </Button>

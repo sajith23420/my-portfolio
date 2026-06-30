@@ -26,26 +26,26 @@ const skillsData = [
 
 const BUBBLE_POSITIONS = [
   { top: "50%", left: "50%", scale: 1.2 },  // 0 (Center)
-  
-  // Inner ring
-  { top: "25%", left: "50%", scale: 1.0 },  // 1
-  { top: "35%", left: "75%", scale: 1.1 },  // 2
-  { top: "65%", left: "75%", scale: 0.9 },  // 3
-  { top: "75%", left: "50%", scale: 1.05 }, // 4
-  { top: "65%", left: "25%", scale: 0.85 }, // 5
-  { top: "35%", left: "25%", scale: 0.95 }, // 6
 
-  // Middle ring
-  { top: "5%", left: "50%", scale: 0.8 },   // 7
-  { top: "15%", left: "80%", scale: 0.9 },  // 8
-  { top: "40%", left: "90%", scale: 0.75 }, // 9
-  { top: "70%", left: "90%", scale: 0.85 }, // 10
-  { top: "90%", left: "75%", scale: 0.8 },  // 11
+  // Inner ring
+  { top: "22%", left: "50%", scale: 1.0 },  // 1
+  { top: "36%", left: "74%", scale: 1.1 },  // 2
+  { top: "64%", left: "74%", scale: 0.9 },  // 3
+  { top: "78%", left: "50%", scale: 1.05 }, // 4
+  { top: "64%", left: "26%", scale: 0.85 }, // 5
+  { top: "36%", left: "26%", scale: 0.95 }, // 6
+
+  // Outer ring
+  { top: "5%",  left: "50%", scale: 0.8 },  // 7
+  { top: "14%", left: "76%", scale: 0.9 },  // 8
+  { top: "36%", left: "93%", scale: 0.75 }, // 9
+  { top: "64%", left: "93%", scale: 0.85 }, // 10
+  { top: "86%", left: "76%", scale: 0.8 },  // 11
   { top: "95%", left: "50%", scale: 0.75 }, // 12
-  { top: "90%", left: "25%", scale: 0.9 },  // 13
-  { top: "70%", left: "10%", scale: 0.85 }, // 14
-  { top: "40%", left: "10%", scale: 0.8 },  // 15
-  { top: "15%", left: "20%", scale: 0.95 }, // 16
+  { top: "86%", left: "24%", scale: 0.9 },  // 13
+  { top: "64%", left: "7%",  scale: 0.85 }, // 14
+  { top: "36%", left: "7%",  scale: 0.8 },  // 15
+  { top: "14%", left: "24%", scale: 0.95 }, // 16
 ];
 
 const getGlowColor = (skill: typeof skillsData[0]) => {
@@ -89,18 +89,18 @@ function SkillBubble({
           animate={isHovered ? { scale: 1.2, y: 0, x: 0 } : { scale: 1, y: floatY, x: floatX }}
           transition={isHovered ? { duration: 0.3 } : { repeat: Infinity, duration, ease: "easeInOut", delay }}
         >
-          <div className="flex flex-col items-center justify-center gap-2 md:gap-3">
+          <div className="flex flex-col items-center justify-center gap-3">
             <motion.div
               animate={{
-                boxShadow: isHovered ? `0px 0px 30px ${glowColor}` : `0px 0px 0px rgba(0,0,0,0)`,
+                boxShadow: isHovered ? `0px 0px 20px ${glowColor}` : `0px 0px 0px rgba(0,0,0,0)`,
                 borderColor: isHovered ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.05)',
                 backgroundColor: isHovered ? '#1a1a1a' : 'rgba(10,10,10,0.8)'
               }}
-              className="rounded-full backdrop-blur-md border flex items-center justify-center transition-colors w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28"
+              className="rounded-full backdrop-blur-md border flex items-center justify-center transition-colors w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 relative"
             >
               <img src={skill.icon} alt={skill.name} className="w-1/2 h-1/2 object-contain pointer-events-none" />
             </motion.div>
-            <span className="text-[10px] sm:text-xs md:text-sm font-medium text-white/90 whitespace-nowrap bg-black/60 px-2.5 py-1 rounded-md backdrop-blur-sm border border-white/5 pointer-events-none">
+            <span className="text-[9px] sm:text-[10px] md:text-xs font-medium text-white/90 whitespace-nowrap bg-black/60 px-2 py-1 rounded-md backdrop-blur-sm border border-white/5 pointer-events-none mt-1">
               {skill.name}
             </span>
           </div>
@@ -112,8 +112,8 @@ function SkillBubble({
 
 export function Skills() {
   return (
-    <Section id="skills" className="overflow-hidden py-24">
-      <div className="text-center mb-24 relative z-10">
+    <Section id="skills" className="w-full pt-16 pb-32">
+      <div className="text-center mb-8 relative z-10 w-full">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -129,7 +129,8 @@ export function Skills() {
         </motion.div>
       </div>
 
-      <div className="relative w-full max-w-[400px] sm:max-w-[600px] md:max-w-[850px] aspect-square mx-auto mb-12">
+      {/* Desktop/Tablet Orbital Layout */}
+      <div className="hidden md:block relative w-full max-w-[900px] h-[750px] sm:h-[800px] mx-auto mt-12">
         <div className="absolute inset-0 z-10">
           {skillsData.map((skill, index) => (
             <SkillBubble 
@@ -140,6 +141,30 @@ export function Skills() {
             />
           ))}
         </div>
+      </div>
+
+      {/* Mobile Grid Layout */}
+      <div className="md:hidden grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6 px-4 mt-8 w-full max-w-2xl mx-auto">
+        {skillsData.map((skill, index) => {
+          const glowColor = getGlowColor(skill);
+          return (
+            <motion.div
+              key={skill.name}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05, duration: 0.4 }}
+              viewport={{ once: true }}
+              className="flex flex-col items-center justify-center p-4 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] transition-colors relative overflow-hidden group"
+            >
+              <div 
+                className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity" 
+                style={{ background: `radial-gradient(circle at center, ${glowColor} 0%, transparent 70%)` }}
+              />
+              <img src={skill.icon} alt={skill.name} className="w-10 h-10 mb-3 object-contain relative z-10" />
+              <span className="text-xs font-medium text-white/80 text-center relative z-10">{skill.name}</span>
+            </motion.div>
+          );
+        })}
       </div>
     </Section>
   );
