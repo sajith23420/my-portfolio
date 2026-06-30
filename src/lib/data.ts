@@ -3,7 +3,7 @@ export const ABOUT_DATA = {
   role: "Full Stack Developer & AI Enthusiast",
   tagline: "Full-stack developer and AI enthusiast from Sri Lanka, building robust web applications with a focus on quality assurance.",
   bio: [
-    "I am a results-driven software engineering undergraduate with hands-on experience in full-stack web development and a strong passion for Artificial Intelligence. Blending technical depth with a keen eye for Software Quality Assurance (SQA), I consistently focus on delivering clean, maintainable, and highly reliable applications.",
+    "I am a results-driven Management Information Systems  undergraduate with hands-on experience in full-stack web development and a strong passion for Artificial Intelligence. Blending technical depth with a keen eye for Software Quality Assurance (SQA), I consistently focus on delivering clean, maintainable, and highly reliable applications.",
     "My core technical stack is built around MERN, Next.js, and JavaScript, complemented by a solid foundation in Java basics. Whether crafting polished digital platforms, exploring AI-driven solutions, or implementing rigorous testing methodologies, I am actively seeking opportunities to contribute to impactful products and grow alongside talented engineering teams.",
   ],
 };
