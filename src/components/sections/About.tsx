@@ -99,7 +99,7 @@ export function About() {
             whileInView={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
             viewport={{ once: true }}
-            className="mt-auto w-full flex justify-center -mx-6 pt-8"
+            className="mt-12 lg:mt-auto w-full flex justify-center -mx-6 pt-8"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
