@@ -20,7 +20,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sajith Bandara | Software Engineer",
+  title: "Sajith Bandara | Full Stack Developer",
   description: "Premium cinematic developer portfolio of Sajith Bandara, showcasing skills, projects, and professional experience.",
 };
 

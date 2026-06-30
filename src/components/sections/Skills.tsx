@@ -21,31 +21,33 @@ const skillsData = [
   { name: "VS Code", icon: "https://api.iconify.design/logos:visual-studio-code.svg", color: "#007ACC" },
   { name: "Gemini", icon: "https://cdn.simpleicons.org/googlegemini/8E75B2" },
   { name: "ChatGPT", icon: "/icons/chatgpt.png", color: "#10A37F" },
-  { name: "Vibe Coding", icon: "https://cdn.simpleicons.org/stackblitz/1389FD" } // Stackblitz lightning bolt looks perfectly like "vibe coding"
+  { name: "Vibe Coding", icon: "https://cdn.simpleicons.org/stackblitz/1389FD" }
 ];
 
+/* Closely-grouped orbital positions — icons cluster toward center with slight vertical overlap */
 const BUBBLE_POSITIONS = [
-  { top: "50%", left: "50%", scale: 1.2 },  // 0 (Center)
+  // Center hero
+  { top: "50%", left: "50%", scale: 1.15 },   // 0: JavaScript (center)
 
-  // Inner ring
-  { top: "22%", left: "50%", scale: 1.0 },  // 1
-  { top: "36%", left: "74%", scale: 1.1 },  // 2
-  { top: "64%", left: "74%", scale: 0.9 },  // 3
-  { top: "78%", left: "50%", scale: 1.05 }, // 4
-  { top: "64%", left: "26%", scale: 0.85 }, // 5
-  { top: "36%", left: "26%", scale: 0.95 }, // 6
+  // Inner ring — tight
+  { top: "24%", left: "50%", scale: 1.0 },    // 1: TypeScript
+  { top: "35%", left: "72%", scale: 1.05 },   // 2: React
+  { top: "60%", left: "72%", scale: 0.95 },   // 3: Next.js
+  { top: "76%", left: "50%", scale: 1.0 },    // 4: Node.js
+  { top: "60%", left: "28%", scale: 0.9 },    // 5: Express.js
+  { top: "35%", left: "28%", scale: 1.0 },    // 6: MySQL
 
-  // Outer ring
-  { top: "5%",  left: "50%", scale: 0.8 },  // 7
-  { top: "14%", left: "76%", scale: 0.9 },  // 8
-  { top: "36%", left: "93%", scale: 0.75 }, // 9
-  { top: "64%", left: "93%", scale: 0.85 }, // 10
-  { top: "86%", left: "76%", scale: 0.8 },  // 11
-  { top: "95%", left: "50%", scale: 0.75 }, // 12
-  { top: "86%", left: "24%", scale: 0.9 },  // 13
-  { top: "64%", left: "7%",  scale: 0.85 }, // 14
-  { top: "36%", left: "7%",  scale: 0.8 },  // 15
-  { top: "14%", left: "24%", scale: 0.95 }, // 16
+  // Outer ring — still grouped, not far-flung
+  { top: "8%",  left: "50%", scale: 0.85 },   // 7: MongoDB
+  { top: "16%", left: "74%", scale: 0.9 },    // 8: Tailwind CSS
+  { top: "38%", left: "90%", scale: 0.8 },    // 9: HTML / CSS
+  { top: "62%", left: "90%", scale: 0.85 },   // 10: Git & GitHub
+  { top: "84%", left: "74%", scale: 0.8 },    // 11: REST APIs
+  { top: "92%", left: "50%", scale: 0.85 },   // 12: Claude
+  { top: "84%", left: "26%", scale: 0.9 },    // 13: VS Code
+  { top: "62%", left: "10%", scale: 0.8 },    // 14: Gemini
+  { top: "38%", left: "10%", scale: 0.85 },   // 15: ChatGPT
+  { top: "16%", left: "26%", scale: 0.9 },    // 16: Vibe Coding
 ];
 
 const getGlowColor = (skill: typeof skillsData[0]) => {
@@ -53,22 +55,22 @@ const getGlowColor = (skill: typeof skillsData[0]) => {
   const parts = skill.icon.split('/');
   const hex = parts[parts.length - 1];
   if (hex.toLowerCase() === 'white') return 'rgba(255,255,255,0.4)';
-  return `#${hex}66`; // 40% opacity hex
+  return `#${hex}66`;
 };
 
-function SkillBubble({ 
-  skill, 
-  index, 
-  pos 
+function SkillBubble({
+  skill,
+  index,
+  pos
 }: {
   skill: typeof skillsData[0];
   index: number;
   pos: { top: string; left: string; scale: number };
 }) {
   const [isHovered, setIsHovered] = useState(false);
-  const floatY = [0, -10 - (index % 3) * 5, 0];
-  const floatX = [0, 5 - (index % 4) * 3, 0];
-  const duration = 3 + (index % 3);
+  const floatY = [0, -8 - (index % 3) * 4, 0];
+  const floatX = [0, 4 - (index % 4) * 2, 0];
+  const duration = 3.5 + (index % 3);
   const delay = (index % 5) * 0.2;
   const glowColor = getGlowColor(skill);
 
@@ -86,21 +88,20 @@ function SkillBubble({
         viewport={{ once: true }}
       >
         <motion.div
-          animate={isHovered ? { scale: 1.2, y: 0, x: 0 } : { scale: 1, y: floatY, x: floatX }}
+          animate={isHovered ? { scale: 1.15, y: 0, x: 0 } : { scale: 1, y: floatY, x: floatX }}
           transition={isHovered ? { duration: 0.3 } : { repeat: Infinity, duration, ease: "easeInOut", delay }}
         >
           <div className="flex flex-col items-center justify-center gap-3">
             <motion.div
               animate={{
-                boxShadow: isHovered ? `0px 0px 20px ${glowColor}` : `0px 0px 0px rgba(0,0,0,0)`,
-                borderColor: isHovered ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.05)',
-                backgroundColor: isHovered ? '#1a1a1a' : 'rgba(10,10,10,0.8)'
+                boxShadow: isHovered ? `0px 0px 30px ${glowColor}` : `0px 0px 12px rgba(243,117,18,0.15)`,
+                backgroundColor: isHovered ? 'rgba(243,117,18,0.08)' : 'rgba(10,10,10,0.85)'
               }}
-              className="rounded-full backdrop-blur-md border flex items-center justify-center transition-colors w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 relative"
+              className="rounded-full backdrop-blur-md flex items-center justify-center transition-colors w-[100px] h-[100px] relative"
             >
-              <img src={skill.icon} alt={skill.name} className="w-1/2 h-1/2 object-contain pointer-events-none" />
+              <img src={skill.icon} alt={skill.name} className="w-12 h-12 object-contain pointer-events-none" />
             </motion.div>
-            <span className="text-[9px] sm:text-[10px] md:text-xs font-medium text-white/90 whitespace-nowrap bg-black/60 px-2 py-1 rounded-md backdrop-blur-sm border border-white/5 pointer-events-none mt-1">
+            <span className="text-xs font-semibold text-white/80 whitespace-nowrap bg-black/50 px-2.5 py-1 rounded-md backdrop-blur-sm border border-white/5 pointer-events-none">
               {skill.name}
             </span>
           </div>
@@ -120,8 +121,8 @@ export function Skills() {
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-4xl md:text-5xl font-heading font-bold mb-4">
-            My <span className="text-accent">Skills</span>
+          <h2 className="text-4xl md:text-5xl font-heading font-black mb-4 tracking-tight text-white">
+            Skills & <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F37512] to-[#ffaa5c]">Technologies</span>
           </h2>
           <p className="text-[rgba(255,255,255,0.6)] max-w-xl mx-auto">
             Technologies I use to build scalable applications.
@@ -130,10 +131,10 @@ export function Skills() {
       </div>
 
       {/* Desktop/Tablet Orbital Layout */}
-      <div className="hidden md:block relative w-full max-w-[900px] h-[750px] sm:h-[800px] mx-auto mt-12">
+      <div className="hidden md:block relative w-full max-w-[900px] h-[900px] mx-auto mt-12">
         <div className="absolute inset-0 z-10">
           {skillsData.map((skill, index) => (
-            <SkillBubble 
+            <SkillBubble
               key={skill.name}
               skill={skill}
               index={index}
@@ -156,8 +157,8 @@ export function Skills() {
               viewport={{ once: true }}
               className="flex flex-col items-center justify-center p-4 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.04] transition-colors relative overflow-hidden group"
             >
-              <div 
-                className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity" 
+              <div
+                className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity"
                 style={{ background: `radial-gradient(circle at center, ${glowColor} 0%, transparent 70%)` }}
               />
               <img src={skill.icon} alt={skill.name} className="w-10 h-10 mb-3 object-contain relative z-10" />
