@@ -144,7 +144,7 @@ export function Hero({ entered }: { entered: boolean }) {
 
     const handleEnded = () => {
       if (hasAutoScrolled.current || userHasScrolled.current) return;
-      
+
       // Check if it already auto-scrolled this session
       if (sessionStorage.getItem("hasAutoScrolled")) return;
 
