@@ -112,6 +112,6 @@ export const EXPERIENCE_DATA = [
 
 export const CONTACT_DATA = {
   email: "sajithbandara23420@gmail.com",
-  linkedin: "https://linkedin.com/in/sajithbandara",
+  linkedin: "www.linkedin.com/in/sajith-bandara-92a2652b1",
   github: "https://github.com/sajith23420",
 };
